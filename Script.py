@@ -122,7 +122,7 @@ def enable_dark_mode():
 def install_firefox_addons():
     try:
         url = "https://github.com/zen-browser/desktop/releases/download/twilight/zen.installer.exe"
-        installer_path = os.path.join(os.getenv("TEMP"), "VSCodeSetup.exe")
+        installer_path = os.path.join(os.getenv("TEMP"), "zen.installer.exe")
         
         print(f"Lade Zen Browser herunter von {url}...")
         urllib.request.urlretrieve(url, installer_path)
@@ -174,7 +174,6 @@ if __name__ == "__main__":
             enable_dark_mode()
             restart_explorer()
         elif choice == "2":
-            
             download_and_install_vscode()
             install_firefox_addons()
         elif choice == "3":
