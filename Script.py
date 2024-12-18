@@ -174,8 +174,8 @@ if __name__ == "__main__":
             enable_dark_mode()
             restart_explorer()
         elif choice == "2":
-            download_and_install_vscode()
             install_firefox_addons()
+            download_and_install_vscode()
         elif choice == "3":
             print("Programm wird beendet :)")
             break
