@@ -20,8 +20,8 @@ DUCKDUCKGO_URL = "https://addons.mozilla.org/firefox/downloads/file/4374439/duck
 def menu():
     print("\nWas möchten Sie ausführen?")
     print("1) Alles ausführen")
-    print("2) Beenden")
-    print("3) installieren")
+    print("2) installieren")
+    print("3) Beenden")
 
     choice = input("Bitte wählen Sie eine Option (1-2): ")
     return choice
@@ -160,12 +160,12 @@ if __name__ == "__main__":
             download_file(wallpaper_url, downloaded_wallpaper_path)
             set_wallpaper(downloaded_wallpaper_path)
             enable_dark_mode()
-            install_firefox_addons()
             restart_explorer()
         elif choice == "2":
+	    download_and_install_vscode()
+            install_firefox_addons()
+	elif choice == "3":
             print("Programm wird beendet :)")
             break
-        elif choice == "3":
-            install_firefox_addons()
         else:
             print("Ungültige Eingabe. Bitte wählen Sie eine Option von 1 bis 7.")
