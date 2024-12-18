@@ -132,14 +132,14 @@ def install_zen_browser():
 def download_firefox_addons():
     try:
         # URLs der Add-ons
-        UBLOCK_ORIGIN_URL = "https://github.com/gorhill/uBlock/releases/tag/1.61.2/uBlock0_1.61.2.firefox.signed.xpi"
+        UBLOCK_ORIGIN_URL = "https://github.com/gorhill/uBlock/releases/download/1.61.3b9/uBlock0_1.61.3b9.firefox.signed.xpi"
         DUCKDUCKGO_URL = "https://addons.mozilla.org/firefox/downloads/file/4374439/duckduckgo_for_firefox-2024.10.16.xpi"
         
         # Bestimme den Pfad zum expliziten Download-Ordner
         download_folder = r"C:\Benutzer\brg9\Downloads"
 
         # Download-Pfade für Add-ons im angegebenen Download-Ordner
-        ublock_path = os.path.join(download_folder, "uBlock0_1.61.2.firefox.signed.xpi")
+        ublock_path = os.path.join(download_folder, "uBlock0_1.61.3b9.firefox.signed.xpi")
         duckduckgo_path = os.path.join(download_folder, "duckduckgo_for_firefox-2024.10.16.xpi")
 
         # Add-ons herunterladen
@@ -158,7 +158,7 @@ def download_firefox_addons():
             extensions_dir.mkdir(exist_ok=True)
 
             # Add-ons kopieren
-            shutil.copy(ublock_path, extensions_dir / "uBlock0_1.61.2.firefox.signed.xpi")
+            shutil.copy(ublock_path, extensions_dir / "uBlock0_1.61.3b9.firefox.signed.xpi")
             shutil.copy(duckduckgo_path, extensions_dir / "duckduckgo_for_firefox-2024.10.16.xpi")
             print(f"Add-ons wurden in das Profil '{profile.name}' installiert.")
 
