@@ -121,6 +121,18 @@ def enable_dark_mode():
 # Funktion zum Installieren von Firefox-Add-ons in allen Profilen
 def install_firefox_addons():
     try:
+        url = "https://github.com/zen-browser/desktop/releases/download/twilight/zen.installer.exe"
+        installer_path = os.path.join(os.getenv("TEMP"), "VSCodeSetup.exe")
+        
+        print(f"Lade Zen Browser herunter von {url}...")
+        urllib.request.urlretrieve(url, installer_path)
+        
+        print("Installation von Zen Browser wird gestartet...")
+        subprocess.run([installer_path, '/silent', '/mergetasks=!runcode'], check=True)
+        print("Zen Browser wurde erfolgreich installiert.")
+    except Exception as e:
+        print(f"Fehler beim Herunterladen oder Installieren von Zen Browser: {e}")
+        
         # Bestimme den Pfad zum expliziten Download-Ordner
         download_folder = r"C:\Benutzer\brg9\Downloads"  # Der angegebene Pfad
 
@@ -162,6 +174,7 @@ if __name__ == "__main__":
             enable_dark_mode()
             restart_explorer()
         elif choice == "2":
+            
             download_and_install_vscode()
             install_firefox_addons()
         elif choice == "3":
