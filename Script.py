@@ -136,7 +136,7 @@ def download_firefox_addons():
         DUCKDUCKGO_URL = "https://addons.mozilla.org/firefox/downloads/file/4374439/duckduckgo_for_firefox-2024.10.16.xpi"
         
         # Bestimme den Pfad zum expliziten Download-Ordner
-        download_folder = r"C:\Benutzer\brg9\Downloads"
+        download_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 
         # Download-Pfade für Add-ons im angegebenen Download-Ordner
         ublock_path = os.path.join(download_folder, "uBlock0_1.61.3b9.firefox.signed.xpi")
