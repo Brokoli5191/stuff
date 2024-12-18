@@ -6,9 +6,6 @@ from pathlib import Path
 import shutil
 import winreg as reg
 
-# Standard-Hintergrundbild (Windows-Standard)
-default_wallpaper = os.path.join(os.getenv('WINDIR'), 'Web', 'Wallpaper', 'Windows', 'img0.jpg')
-
 # Pfad, um das heruntergeladene Hintergrundbild zu speichern
 downloaded_wallpaper_path = os.path.join(os.getenv("TEMP"), "downloaded_wallpaper.jpg")
 
@@ -23,7 +20,7 @@ def menu():
     print("2) installieren")
     print("3) Beenden")
 
-    choice = input("Bitte wählen Sie eine Option (1-2): ")
+    choice = input("Bitte wählen Sie eine Option (1-3): ")
     return choice
 
 # Funktion zum Herunterladen einer Datei
@@ -124,9 +121,12 @@ def enable_dark_mode():
 # Funktion zum Installieren von Firefox-Add-ons in allen Profilen
 def install_firefox_addons():
     try:
-	        # Download-Pfade für Add-ons
-        ublock_path = os.path.join(os.getenv("TEMP"), "uBlock0@raymondhill.net.xpi")
-        duckduckgo_path = os.path.join(os.getenv("TEMP"), "ddg@duckduckgo.com.xpi")
+        # Bestimme den Pfad zum expliziten Download-Ordner
+        download_folder = r"C:\Benutzer\brg9\Downloads"  # Der angegebene Pfad
+
+        # Download-Pfade für Add-ons im angegebenen Download-Ordner
+        ublock_path = os.path.join(download_folder, "ublock_origin.xpi")
+        duckduckgo_path = os.path.join(download_folder, "duckduckgo.xpi")
 
         # Add-ons herunterladen
         download_file(UBLOCK_ORIGIN_URL, ublock_path)
@@ -144,8 +144,8 @@ def install_firefox_addons():
             extensions_dir.mkdir(exist_ok=True)
 
             # Add-ons kopieren
-            shutil.copy(ublock_path, extensions_dir / "uBlock0@raymondhill.net.xpi")
-            shutil.copy(duckduckgo_path, extensions_dir / "ddg@duckduckgo.com.xpi")
+            shutil.copy(ublock_path, extensions_dir / "ublock_origin.xpi")
+            shutil.copy(duckduckgo_path, extensions_dir / "duckduckgo.xpi")
             print(f"Add-ons wurden in das Profil '{profile.name}' installiert.")
 
         print("Alle Add-ons wurden erfolgreich installiert. Bitte starten Sie Firefox neu.")
