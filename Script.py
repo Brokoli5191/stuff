@@ -131,17 +131,16 @@ def install_zen_browser():
 
 def download_firefox_addons():
     try:
+        # URLs der Add-ons
+        UBLOCK_ORIGIN_URL = "https://github.com/gorhill/uBlock/releases/tag/1.61.2/uBlock0_1.61.2.firefox.signed.xpi"
+        DUCKDUCKGO_URL = "https://addons.mozilla.org/firefox/downloads/file/4374439/duckduckgo_for_firefox-2024.10.16.xpi"
+        
         # Bestimme den Pfad zum expliziten Download-Ordner
-        download_folder = r"C:\Benutzer\brg9\Downloads"  # Der angegebene Pfad
+        download_folder = r"C:\Benutzer\brg9\Downloads"
 
         # Download-Pfade für Add-ons im angegebenen Download-Ordner
         ublock_path = os.path.join(download_folder, "uBlock0_1.61.2.firefox.signed.xpi")
         duckduckgo_path = os.path.join(download_folder, "duckduckgo_for_firefox-2024.10.16.xpi")
-
-        
-        # URLs der Add-ons
-        UBLOCK_ORIGIN_URL = "https://github.com/gorhill/uBlock/releases/tag/1.61.2/uBlock0_1.61.2.firefox.signed.xpi"
-        DUCKDUCKGO_URL = "https://addons.mozilla.org/firefox/downloads/file/4374439/duckduckgo_for_firefox-2024.10.16.xpi"
 
         # Add-ons herunterladen
         download_file(UBLOCK_ORIGIN_URL, ublock_path)
