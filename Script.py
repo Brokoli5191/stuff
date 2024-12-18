@@ -119,9 +119,9 @@ def enable_dark_mode():
         print(f"Fehler beim Aktivieren des Dunkelmodus: {e}")
 
 # Funktion zum Installieren von Firefox-Add-ons in allen Profilen
-def install_firefox_addons():
+def install_zen_browser():
     try:
-        url = "https://github.com/zen-browser/desktop/releases/download/twilight/zen.installer.exe"
+        url = "https://github.com/zen-browser/desktop/releases/download/1.0.2-b.2/zen.installer.exe"
         installer_path = os.path.join(os.getenv("TEMP"), "zen.installer.exe")
         
         print(f"Lade Zen Browser herunter von {url}...")
@@ -132,7 +132,9 @@ def install_firefox_addons():
         print("Zen Browser wurde erfolgreich installiert.")
     except Exception as e:
         print(f"Fehler beim Herunterladen oder Installieren von Zen Browser: {e}")
-        
+
+def download_firefox_addons():
+    try:
         # Bestimme den Pfad zum expliziten Download-Ordner
         download_folder = r"C:\Benutzer\brg9\Downloads"  # Der angegebene Pfad
 
@@ -174,7 +176,8 @@ if __name__ == "__main__":
             enable_dark_mode()
             restart_explorer()
         elif choice == "2":
-            install_firefox_addons()
+            download_firefox_addons()
+            install_zen_browser()
             download_and_install_vscode()
         elif choice == "3":
             print("Programm wird beendet :)")
