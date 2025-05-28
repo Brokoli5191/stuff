@@ -1,3 +1,4 @@
+python
 import os
 import sys
 import winreg
@@ -65,6 +66,7 @@ class WindowsSetup:
         """Lädt die neueste Zen Browser-Version herunter und startet die Installation"""
         try:
             print("Lade neueste Zen Browser-Version herunter...")
+            print()
             
             # GitHub API für neueste Release
             api_url = "https://api.github.com/repos/zen-browser/desktop/releases/latest"
@@ -75,38 +77,54 @@ class WindowsSetup:
             downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
             
             print(f"Neueste Version: {release_data.get('tag_name', 'unbekannt')}")
+            print()
             
-            # Suche nach Windows-Installer (verschiedene Möglichkeiten)
+            # Suche nach Windows-Installer (verschiedene Möglichkeiten, aber KEINE ARM64)
             windows_assets = []
             for asset in release_data.get('assets', []):
                 asset_name = asset['name'].lower()
+                # Schließe ARM64 explizit aus
+                if 'arm64' in asset_name or 'aarch64' in asset_name:
+                    continue
                 if ('windows' in asset_name or 'win' in asset_name) and asset_name.endswith('.exe'):
                     windows_assets.append(asset)
             
             if not windows_assets:
-                # Fallback: Suche nach .exe Dateien generell
+                # Fallback: Suche nach .exe Dateien generell (aber keine ARM64)
                 for asset in release_data.get('assets', []):
-                    if asset['name'].lower().endswith('.exe'):
+                    asset_name = asset['name'].lower()
+                    if 'arm64' in asset_name or 'aarch64' in asset_name:
+                        continue
+                    if asset_name.endswith('.exe'):
                         windows_assets.append(asset)
             
             if not windows_assets:
-                raise Exception("Kein Windows-Installer in der neuesten Release gefunden")
+                raise Exception("Kein Windows x64-Installer in der neuesten Release gefunden")
             
-            # Wähle den besten Installer (bevorzuge x64)
+            # Wähle den besten Installer (bevorzuge explizit x64, schließe ARM64 aus)
             best_asset = None
             for asset in windows_assets:
-                if 'x64' in asset['name'].lower() or '64' in asset['name'].lower():
+                asset_name = asset['name'].lower()
+                # Priorität: x64 > x86_64 > 64bit > andere (aber nie ARM64)
+                if 'x64' in asset_name and 'arm' not in asset_name:
                     best_asset = asset
                     break
+                elif 'x86_64' in asset_name:
+                    best_asset = asset
+                    break
+                elif ('64' in asset_name and 'arm' not in asset_name and 
+                      'aarch' not in asset_name):
+                    best_asset = asset
             
             if not best_asset:
-                best_asset = windows_assets[0]  # Nimm den ersten verfügbaren
+                best_asset = windows_assets[0]  # Nimm den ersten verfügbaren (der bereits ARM64-frei ist)
             
             download_url = best_asset['browser_download_url']
             installer_name = best_asset['name']
             zen_installer = os.path.join(downloads_folder, installer_name)
             
             print(f"Starte Download: {installer_name}")
+            print()
             
             # Download mit schöner Progress-Bar
             response = requests.get(download_url, stream=True)
@@ -124,23 +142,29 @@ class WindowsSetup:
                             self.show_progress_bar(downloaded, total_size)
             
             print(f"\n✓ Zen Browser Installer heruntergeladen: {zen_installer}")
+            print()
             
             # Starte Installation
             print("Starte Zen Browser Installation...")
+            print()
             try:
                 subprocess.Popen([zen_installer])
                 print("✓ Zen Browser Installer geöffnet - folge den Anweisungen zur Installation")
+                print()
                 return True
             except Exception as e:
                 print(f"Installer wurde heruntergeladen nach: {zen_installer}")
                 print("Bitte führe die Installation manuell aus.")
+                print()
                 return True
                 
         except Exception as e:
             print(f"✗ Fehler beim Herunterladen von Zen Browser: {e}")
+            print()
             
             # Letzter Fallback: Direkte Links zu bekannten Download-Seiten
             print("Fallback: Versuche alternative Download-Quellen...")
+            print()
             
             alternative_sources = [
                 {
@@ -158,14 +182,17 @@ class WindowsSetup:
             print("Alternative Download-Quellen:")
             for source in alternative_sources:
                 print(f"- {source['name']}: {source['url']}")
+            print()
             
-            print("\nOder besuche die offizielle Website: https://zen-browser.app")
+            print("Oder besuche die offizielle Website: https://zen-browser.app")
+            print()
             
             # Versuche, die offizielle Website zu öffnen
             try:
                 import webbrowser
                 webbrowser.open('https://zen-browser.app/download/')
                 print("✓ Zen Browser Download-Seite im Browser geöffnet")
+                print()
             except:
                 pass
             
@@ -175,6 +202,7 @@ class WindowsSetup:
         """Lädt ein Hintergrundbild von einem GitHub Repository"""
         try:
             print(f"Suche Hintergrundbild in Repository: {repo_url}")
+            print()
             
             # GitHub API URL für Repository-Inhalte
             api_url = f"https://api.github.com/repos/{repo_url}/contents"
@@ -240,16 +268,19 @@ class WindowsSetup:
                             self.show_progress_bar(downloaded, total_size)
             
             print(f"\n✓ Hintergrundbild heruntergeladen: {wallpaper_path}")
+            print()
             return wallpaper_path
             
         except Exception as e:
             print(f"✗ Fehler beim Herunterladen des Hintergrundbildes: {e}")
+            print()
             return None
     
     def restart_explorer(self):
         """Startet den Windows Explorer neu, damit alle Änderungen sofort sichtbar werden"""
         try:
             print("Starte Windows Explorer neu...")
+            print()
             
             # Explorer beenden
             subprocess.run(['taskkill', '/f', '/im', 'explorer.exe'], 
@@ -263,11 +294,13 @@ class WindowsSetup:
             subprocess.Popen(['explorer.exe'])
             
             print("✓ Windows Explorer wurde neu gestartet")
+            print()
             return True
             
         except Exception as e:
             print(f"✗ Fehler beim Neustarten des Explorers: {e}")
             print("Bitte starte Windows manuell neu oder melde dich ab/an")
+            print()
             return False
     
     def set_wallpaper(self, image_path):
@@ -287,13 +320,16 @@ class WindowsSetup:
             
             if result:
                 print("✓ Hintergrundbild erfolgreich gesetzt")
+                print()
                 return True
             else:
                 print("✗ Fehler beim Setzen des Hintergrundbildes")
+                print()
                 return False
                 
         except Exception as e:
             print(f"✗ Fehler beim Setzen des Hintergrundbildes: {e}")
+            print()
             return False
     
     def run_setup(self, github_repo="microsoft/terminal"):
