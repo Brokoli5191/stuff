@@ -34,6 +34,31 @@ class WindowsSetup:
             print(f"✗ Fehler beim Setzen des Dark Mode: {e}")
             return False
     
+    def format_bytes(self, bytes_value):
+        """Formatiert Bytes in eine lesbare Form (KB, MB, GB)"""
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if bytes_value < 1024.0:
+                return f"{bytes_value:.1f} {unit}"
+            bytes_value /= 1024.0
+        return f"{bytes_value:.1f} TB"
+    
+    def show_progress_bar(self, downloaded, total, width=50):
+        """Zeigt eine schöne Progress-Bar wie auf Linux"""
+        if total == 0:
+            return
+        
+        percentage = (downloaded / total) * 100
+        filled_width = int(width * downloaded // total)
+        
+        # Progress-Bar mit schönen Zeichen
+        bar = '█' * filled_width + '▒' * (width - filled_width)
+        
+        # Formatierte Ausgabe
+        downloaded_str = self.format_bytes(downloaded)
+        total_str = self.format_bytes(total)
+        
+        print(f'\r[{bar}] {percentage:6.2f}% ({downloaded_str}/{total_str})', end='', flush=True)
+    
     def download_zen_browser(self):
         """Lädt die neueste Zen Browser-Version herunter und startet die Installation"""
         try:
@@ -81,7 +106,7 @@ class WindowsSetup:
             
             print(f"Lade {installer_name} herunter...")
             
-            # Download mit Progress
+            # Download mit schöner Progress-Bar
             response = requests.get(download_url, stream=True)
             response.raise_for_status()
             
@@ -94,8 +119,7 @@ class WindowsSetup:
                         f.write(chunk)
                         downloaded += len(chunk)
                         if total_size > 0:
-                            percent = (downloaded / total_size) * 100
-                            print(f"\rDownload: {percent:.1f}%", end='', flush=True)
+                            self.show_progress_bar(downloaded, total_size)
             
             print(f"\n✓ Zen Browser Installer heruntergeladen: {zen_installer}")
             
@@ -195,16 +219,25 @@ class WindowsSetup:
                 # Verwende ein schönes Standardbild von Unsplash
                 wallpaper_url = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2560&q=80"
             
-            # Download des Bildes
+            # Download des Bildes mit Progress-Bar
             wallpaper_path = os.path.join(os.path.expanduser("~"), "Downloads", "wallpaper.jpg")
             
-            response = requests.get(wallpaper_url)
+            print("Lade Hintergrundbild herunter...")
+            response = requests.get(wallpaper_url, stream=True)
             response.raise_for_status()
             
-            with open(wallpaper_path, 'wb') as f:
-                f.write(response.content)
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded = 0
             
-            print(f"✓ Hintergrundbild heruntergeladen: {wallpaper_path}")
+            with open(wallpaper_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size > 0:
+                            self.show_progress_bar(downloaded, total_size)
+            
+            print(f"\n✓ Hintergrundbild heruntergeladen: {wallpaper_path}")
             return wallpaper_path
             
         except Exception as e:
