@@ -104,7 +104,7 @@ class WindowsSetup:
             installer_name = best_asset['name']
             zen_installer = os.path.join(downloads_folder, installer_name)
             
-            print(f"Lade {installer_name} herunter...")
+            print(f"Starte Download: {installer_name}")
             
             # Download mit schöner Progress-Bar
             response = requests.get(download_url, stream=True)
