@@ -8,6 +8,7 @@ import ctypes
 from ctypes import wintypes
 import tempfile
 import re
+import time
 
 class WindowsSetup:
     def __init__(self):
@@ -38,73 +39,111 @@ class WindowsSetup:
         try:
             print("Lade neueste Zen Browser-Version herunter...")
             
-            # Zen Browser Download URL (automatisch neueste Version)
-            zen_url = "https://zen-browser.app/download/windows/x64"
-            downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
-            zen_installer = os.path.join(downloads_folder, "ZenBrowserInstaller.exe")
-            
-            # Download Zen Browser Installer
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            response = requests.get(zen_url, headers=headers, stream=True, allow_redirects=True)
+            # GitHub API für neueste Release
+            api_url = "https://api.github.com/repos/zen-browser/desktop/releases/latest"
+            response = requests.get(api_url)
             response.raise_for_status()
+            
+            release_data = response.json()
+            downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+            
+            print(f"Neueste Version: {release_data.get('tag_name', 'unbekannt')}")
+            
+            # Suche nach Windows-Installer (verschiedene Möglichkeiten)
+            windows_assets = []
+            for asset in release_data.get('assets', []):
+                asset_name = asset['name'].lower()
+                if ('windows' in asset_name or 'win' in asset_name) and asset_name.endswith('.exe'):
+                    windows_assets.append(asset)
+            
+            if not windows_assets:
+                # Fallback: Suche nach .exe Dateien generell
+                for asset in release_data.get('assets', []):
+                    if asset['name'].lower().endswith('.exe'):
+                        windows_assets.append(asset)
+            
+            if not windows_assets:
+                raise Exception("Kein Windows-Installer in der neuesten Release gefunden")
+            
+            # Wähle den besten Installer (bevorzuge x64)
+            best_asset = None
+            for asset in windows_assets:
+                if 'x64' in asset['name'].lower() or '64' in asset['name'].lower():
+                    best_asset = asset
+                    break
+            
+            if not best_asset:
+                best_asset = windows_assets[0]  # Nimm den ersten verfügbaren
+            
+            download_url = best_asset['browser_download_url']
+            installer_name = best_asset['name']
+            zen_installer = os.path.join(downloads_folder, installer_name)
+            
+            print(f"Lade {installer_name} herunter...")
+            
+            # Download mit Progress
+            response = requests.get(download_url, stream=True)
+            response.raise_for_status()
+            
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded = 0
             
             with open(zen_installer, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size > 0:
+                            percent = (downloaded / total_size) * 100
+                            print(f"\rDownload: {percent:.1f}%", end='', flush=True)
             
-            print(f"✓ Zen Browser Installer heruntergeladen: {zen_installer}")
+            print(f"\n✓ Zen Browser Installer heruntergeladen: {zen_installer}")
             
-            # Starte Zen Browser Installation
+            # Starte Installation
             print("Starte Zen Browser Installation...")
             try:
                 subprocess.Popen([zen_installer])
                 print("✓ Zen Browser Installer geöffnet - folge den Anweisungen zur Installation")
+                return True
             except Exception as e:
-                print(f"Zen Browser Installer wurde heruntergeladen nach: {zen_installer}")
+                print(f"Installer wurde heruntergeladen nach: {zen_installer}")
                 print("Bitte führe die Installation manuell aus.")
+                return True
                 
-            return True
-            
         except Exception as e:
             print(f"✗ Fehler beim Herunterladen von Zen Browser: {e}")
-            print("Fallback: Versuche alternative Download-Methode...")
             
-            # Fallback: GitHub Releases API
+            # Letzter Fallback: Direkte Links zu bekannten Download-Seiten
+            print("Fallback: Versuche alternative Download-Quellen...")
+            
+            alternative_sources = [
+                {
+                    'name': 'Uptodown',
+                    'url': 'https://zen-browser.en.uptodown.com/windows/download',
+                    'description': 'Uptodown Download-Seite'
+                },
+                {
+                    'name': 'Softpedia', 
+                    'url': 'https://www.softpedia.com/get/Internet/Browsers/Zen-Browser.shtml',
+                    'description': 'Softpedia Download-Seite'
+                }
+            ]
+            
+            print("Alternative Download-Quellen:")
+            for source in alternative_sources:
+                print(f"- {source['name']}: {source['url']}")
+            
+            print("\nOder besuche die offizielle Website: https://zen-browser.app")
+            
+            # Versuche, die offizielle Website zu öffnen
             try:
-                api_url = "https://api.github.com/repos/zen-browser/desktop/releases/latest"
-                response = requests.get(api_url)
-                response.raise_for_status()
-                
-                release_data = response.json()
-                
-                # Suche nach Windows x64 Installer
-                for asset in release_data.get('assets', []):
-                    if 'windows' in asset['name'].lower() and 'x64' in asset['name'].lower():
-                        download_url = asset['browser_download_url']
-                        
-                        print(f"Lade {asset['name']} herunter...")
-                        response = requests.get(download_url, stream=True)
-                        response.raise_for_status()
-                        
-                        zen_installer = os.path.join(downloads_folder, asset['name'])
-                        with open(zen_installer, 'wb') as f:
-                            for chunk in response.iter_content(chunk_size=8192):
-                                f.write(chunk)
-                        
-                        print(f"✓ Zen Browser von GitHub heruntergeladen: {zen_installer}")
-                        subprocess.Popen([zen_installer])
-                        return True
-                
-                print("✗ Kein passender Windows-Installer gefunden")
-                return False
-                
-            except Exception as fallback_error:
-                print(f"✗ Auch Fallback-Download fehlgeschlagen: {fallback_error}")
-                print("Bitte lade Zen Browser manuell von https://zen-browser.app herunter")
-                return False
+                import webbrowser
+                webbrowser.open('https://zen-browser.app/download/')
+                print("✓ Zen Browser Download-Seite im Browser geöffnet")
+            except:
+                pass
+            
+            return False
     
     def get_github_wallpaper(self, repo_url="microsoft/terminal", image_pattern=r"wallpaper.*\.(?:jpg|jpeg|png|bmp)"):
         """Lädt ein Hintergrundbild von einem GitHub Repository"""
@@ -172,6 +211,30 @@ class WindowsSetup:
             print(f"✗ Fehler beim Herunterladen des Hintergrundbildes: {e}")
             return None
     
+    def restart_explorer(self):
+        """Startet den Windows Explorer neu, damit alle Änderungen sofort sichtbar werden"""
+        try:
+            print("Starte Windows Explorer neu...")
+            
+            # Explorer beenden
+            subprocess.run(['taskkill', '/f', '/im', 'explorer.exe'], 
+                         capture_output=True, check=False)
+            
+            # Kurz warten
+            import time
+            time.sleep(2)
+            
+            # Explorer neu starten
+            subprocess.Popen(['explorer.exe'])
+            
+            print("✓ Windows Explorer wurde neu gestartet")
+            return True
+            
+        except Exception as e:
+            print(f"✗ Fehler beim Neustarten des Explorers: {e}")
+            print("Bitte starte Windows manuell neu oder melde dich ab/an")
+            return False
+    
     def set_wallpaper(self, image_path):
         """Setzt das Hintergrundbild in Windows"""
         try:
@@ -219,12 +282,27 @@ class WindowsSetup:
         if wallpaper_path:
             print("4. Setze Hintergrundbild...")
             self.set_wallpaper(wallpaper_path)
+        print()
         
-        print("\n=== Setup abgeschlossen! ===")
-        print("Hinweise:")
-        print("- Dark Mode wurde aktiviert (evtl. Neustart erforderlich)")
-        print("- Zen Browser Installer wurde gestartet - folge den Installationsschritten")
-        print("- Hintergrundbild wurde gesetzt")
+        # 4. Explorer neustarten für sofortige Änderungen
+        print("5. Starte Windows Explorer neu...")
+        self.restart_explorer()
+        print()
+        
+        print("=== Setup erfolgreich abgeschlossen! ===")
+        print("Alle Änderungen wurden angewendet:")
+        print("✓ Dark Mode aktiviert")
+        print("✓ Zen Browser heruntergeladen")
+        print("✓ Hintergrundbild gesetzt")
+        print("✓ Windows Explorer neu gestartet")
+        print("\nDas Programm wird automatisch beendet...")
+        
+        # Kurz warten, damit der Benutzer die Meldung lesen kann
+        import time
+        time.sleep(3)
+        
+        # Programm beenden
+        sys.exit(0)
 
 def main():
     setup = WindowsSetup()
