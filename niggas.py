@@ -28,10 +28,12 @@ class WindowsSetup:
                 winreg.SetValueEx(key, "SystemUsesLightTheme", 0, winreg.REG_DWORD, 0)
             
             print("✓ Dark Mode erfolgreich aktiviert")
+            print()
             return True
             
         except Exception as e:
             print(f"✗ Fehler beim Setzen des Dark Mode: {e}")
+            print()
             return False
     
     def format_bytes(self, bytes_value):
